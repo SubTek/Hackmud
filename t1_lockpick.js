@@ -1,196 +1,127 @@
-function(context, args)
-{
-	if (!args) {return "Input a target with target:#s.npc.loc\nreport:true to receive feedback"}
+function(context, args) {
+    if (!args) {
+        return "Input target with target:#s.npc.loc";
+    }
+    
+    let kv = {}; // Variable for all keys and parameters
+    let response;
+    let lock = "";
+    let ez = ["open", "release", "unlock"];
+    let colors = "red,orange,yellow,lime,green,cyan,blue,purple".split(',');
+    let n1 = "is not the"; // Comparison check string for the incorrect parameters
+    let l0cket = "cmppiq,sa23uw,tvfkyq,uphlaw,vc2c7q,xwz7ja,i874y3,72umy0,5c7e1r,hc3b69,nfijix,4jitu5,6hh8xw".split(',');
+    let times = {};
 
-	let kv = {} //variable for all keys and parameters
-	let response,
-			lock = "",
-			ez = ["open","release","unlock"],
-			colors = "red,orange,yellow,lime,green,cyan,blue,purple".split(','),
-			n1 = "is not the",//comparison check string for the incorrect parameter checks
-			l0cket = "cmppiq,sa23uw,tvfkyq,uphlaw,vc2c7q,xwz7ja,i874y3,72umy0,5c7e1r,hc3b69,nfijix,4jitu5,6hh8xw".split(','),
-			debug = [],
-			times = {},
-			report = {}
-	
-	rspC()
+    rspC();
 
-	let lastCycle = 0
-	while (true)
-	{
+    let lastCycle = 0;
+    while (true) {
+        if (!response) {
+            return "[`DERROR`] Target does not exist";
+        }
 
-		if (!response)
-		{
-			report["msg"] = "error, target does not exist"
-			break
-		}
-		if (rspI("chain your hardline"))
-		{
-			return response
-		}
+        if (lock.length) {
+            times[lock] = Date.now() - _START - lastCycle;
+        }
+        lastCycle = Date.now() - _START;
 
-		if (lock.length)
-		{
-			times[lock] = Date.now()-_START-lastCycle
-		}
-		lastCycle = Date.now()-_START
-		if (!rspI("ion terminated.") || !rspI("system offline"))
-		{
-			rspC()
-		}
+        if (!rspI("Connection terminated.") || !rspI("system offline")) {
+            rspC();
+        }
 
-		if (rspI("Denied access")) // lock found
-		{
-			lock = /`N(\S*?)` lock./.exec(response)[1]
-			if (lock.includes("EZ_"))
-			{
+        if (rspI("Denied access")) { // Lock found
+            lock = /`N(\S*?)` lock./.exec(response)[1];
 
-				for (let i of ez)
-				{
-					kv[lock] = i
-					if (!rspC().includes(n1))
-					{
-						break
-					}
-				}
-				if (rspI("digit"))
-				{
-					ezDigit("digit")
-				}
-				else if (rspI("ez_prime"))
-				{
-					ezDigit("ez_prime")
-				}
+            if (lock.includes("EZ_")) { // EZ lock cracking
+                for (let i of ez) {
+                    kv[lock] = i;
+                    if (!rspC().includes(n1)) {
+                        break;
+                    }
+                }
 
-			}
-			else if(lock.includes("c00"))
-			{
+                if (rspI("digit")) {
+                    ezDigit("digit");
+                } else if (rspI("ez_prime")) {
+                    ezDigit("ez_prime");
+                }
+            } else if (lock.includes("c00")) { // Color lock cracking
+                for (let i in colors) {
+                    let j = parseInt(i);
+                    kv[lock] = colors[i];
 
-				for (let i in colors)
-				{
-					let j = parseInt(i)
-					kv[lock] = colors[i]
-					if (lock == "c001")
-					{
-						kv["color_digit"] = kv["c001"].length
-					}
-					else if (lock == "c002")
-					{
-						kv["c002_complement"] = colors[(j+4)%8]
-					}
-					else if (lock == "c003")
-					{
-						kv["c003_triad_1"] = colors[(j+5)%8]
-						kv["c003_triad_2"] = colors[(j+3)%8]
-					}
-					rspC()
-					if (!rspI(n1))
-					{
-						break
-					}
-				}
+                    if (lock == "c001") {
+                        kv["color_digit"] = kv["c001"].length;
+                    } else if (lock == "c002") {
+                        kv["c002_complement"] = colors[(j + 4) % 8];
+                    } else if (lock == "c003") {
+                        kv["c003_triad_1"] = colors[(j + 5) % 8];
+                        kv["c003_triad_2"] = colors[(j + 3) % 8];
+                    }
 
-			}
-			else if(lock.includes("l0cket"))
-			{
+                    rspC();
+                    if (!rspI(n1)) {
+                        break;
+                    }
+                }
+            } else if (lock.includes("l0cket")) { // l0cket cracking
+                let error = true;
+                for (let i of l0cket) {
+                    kv["l0cket"] = i;
+                    if (!rspC().includes(n1)) {
+                        error = false;
+                        break;
+                    }
+                }
 
-				let error = true
-				for (let i of l0cket)
-				{
-					kv["l0cket"] = i
-					if (!rspC().includes(n1))
-					{
-						error = false
-						break
-					}
-				}
-				if (error)
-				{
-					report["msg"] = "error, unknown lock argument"
-					break
-				}
+                if (error) {
+                    return "[`DERROR`] Unknown lock argument";
+                }
+            } else if (lock.includes("DATA_CHECK")) { // DATA_CHECK cracking
+                kv["DATA_CHECK"] = "";
+                let data_check = rspC().split("\n");
 
-			}
-			else if(lock.includes("DATA_CHECK"))
-			{
+                if (data_check.length != 3) {
+                    return "[`DERROR`] DATA_CHECK failure, less than 3 questions";
+                }
 
-				kv["DATA_CHECK"] = ""
-				let data_check = rspC().split("\n")
-				if (data_check.length != 3)
-				{
-					report["msg"] = "error, DATA_CHECK error, less then 3 questions"
-					break
-				}
-				let string = "";
-				for (let i of data_check)
-				{
-					string += #fs.lore.data_check({lookup:i}).answer
-				}
-				kv["DATA_CHECK"] = string
+                let string = "";
+                for (let i of data_check) {
+                    string += #fs.lore.data_check({ lookup: i }).answer;
+                }
 
-			}
-		}
-		else if (rspI("nection terminated.") || rspI("system offline"))
-		{
-			report["msg"] = "success!"
-			report["success"] = true
-			break
-		}
-		else if (rspI(n1)) //argument is wrong, something went wrong in the unlocking process
-		{
-			report["msg"] = "error, wrong lock argument"
-			break
-		}
-		else if (Date.now()-_START > 4500)
-		{
-			report["msg"] = "error, timeout"
-			break
-		}
-		else if (rspI("breached")) //argument is wrong, something went wrong in the unlocking process
-		{
-			report["msg"] = "error, target already breached!"
-			break
-		}
-		else
-		{
-			report["msg"] = "error, response not recognized"
-			break
-		}
+                kv["DATA_CHECK"] = string;
+            }
+        } else if (rspI("terminated") || rspI("defence system offline")) {
+            return "[`LSUCCESS`] Hack successful!";
+        } else if (rspI(n1)) { // Argument is wrong, something went wrong in the unlocking process
+            return "[`DERROR`] Wrong lock argument";
+        } else if (rspI("breached")) { // Target already breached
+            return "[`DERROR`] Target Already Breached!";
+        }
+    }
 
-	}
-	report["kv"] = kv
-	report["rsp"] = response
-	report["times"] = times
-	report["ms"] = Date.now()-_START
+    function ezDigit(key) {
+        let digit = 0;
+        if (key.includes("prime")) {
+            digit = 1;
+        }
 
-	if (args.report) return report
+        while (true) {
+            kv[key] = digit++;
+            if (digit > 9) digit++;
+            if (!rspC().includes(n1)) {
+                break;
+            }
+        }
+    }
 
-	function ezDigit(key){
-		let digit = 0;
-		if (key.includes("prime"))
-		{
-			digit = 1;
-		}
-		while (true)
-		{
-			kv[key] = digit++
-			digit>9?digit++:null
-			if (!rspC().includes(n1))
-			{
-				break
-			}
-		}
-	}
+    function rspC() {
+        response = args.target.call(kv);
+        return response;
+    }
 
-	function rspC()
-	{
-		response = args.target.call(kv)
-		return response
-	}
-
-	function rspI(x)
-	{
-		return response.includes(x)
-	}
-
+    function rspI(x) {
+        return response.includes(x);
+    }
 }
