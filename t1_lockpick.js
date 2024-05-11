@@ -31,46 +31,53 @@ function(context, args) {
             rspC();
         }
         // Handle access denial by identifying the lock type and trying potential solutions.
-        if (rspI("Denied access")) {
-            lock = /`N(\S*?)` lock./.exec(response)[1];
-            if (lock.includes("EZ_")) {
-                for (let i of ez) {
-                    kv[lock] = i;
-                    if (!rspC().includes(n1)) {
-                        break;
-                    }
+if (rspI("Denied access")) {
+    lock = /`N(\S*?)` lock./.exec(response)[1];
+    switch (true) {
+        case lock.includes("EZ_"):
+            for (let i of ez) {
+                kv[lock] = i;
+                if (!rspC().includes(n1)) {
+                    break;
                 }
-                // Further handle EZ locks requiring digits or primes.
-                if (rspI("digit")) {
-                    ezDigit("digit");
-                } else if (rspI("ez_prime")) {
-                    ezDigit("ez_prime");
-                }
-            } else if (lock.startsWith("c00")) {
-                for (let i = 0; i < colors.length; i++) {
-                    kv[lock] = colors[i];
-                    handleColorLock(i, lock);
-                    rspC();
-                    if (!rspI(n1)) {
-                        break;
-                    }
-                }
-            } else if (lock.includes("l0cket")) {
-                let error = true;
-                for (let code of l0cket) {
-                    kv["l0cket"] = code;
-                    if (!rspC().includes(n1)) {
-                        error = false;
-                        break;
-                    }
-                }
-                if (error) {
-                    return "[`DERROR`] Unknown lock argument";
-                }
-            } else if (lock.includes("DATA_CHECK")) {
-                handleDataCheck();
             }
-        } else if (rspI("terminated") || rspI("defence system offline")) {
+            // Further handle EZ locks requiring digits or primes.
+            if (rspI("digit")) {
+                ezDigit("digit");
+            } else if (rspI("ez_prime")) {
+                ezDigit("ez_prime");
+            }
+            break;
+        case lock.startsWith("c00"):
+            for (let i = 0; i < colors.length; i++) {
+                kv[lock] = colors[i];
+                handleColorLock(i, lock);
+                rspC();
+                if (!rspI(n1)) {
+                    break;
+                }
+            }
+            break;
+        case lock.includes("l0cket"):
+            let error = true;
+            for (let code of l0cket) {
+                kv["l0cket"] = code;
+                if (!rspC().includes(n1)) {
+                    error = false;
+                    break;
+                }
+            }
+            if (error) {
+                return "[`DERROR`] Unknown lock argument";
+            }
+            break;
+        case lock.includes("DATA_CHECK"):
+            handleDataCheck();
+            break;
+        default:
+            return "[`DERROR`] Unknown lock type";
+    }
+} else if (rspI("terminated") || rspI("defence system offline")) {
             return "[`LSUCCESS`] Hack successful!";
         } else if (rspI("breached")) {
             return "[`DERROR`] Target Already Breached!";
