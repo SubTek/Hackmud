@@ -34,37 +34,37 @@ function(context, args) // Main function taking context and args as parameters
         response2 = response2.replace(crp, "§");
     }
 
-    // Loop to replace corrupted characters in the response before a timeout occurs
-    while (Date.now() - _START < 3900) {
-        
-        let corIndex = response.indexOf("§");
-        if (corIndex == -1) {
-            return response;
-        }
+// Loop to replace corrupted characters in the response before a timeout occurs
+while (Date.now() - _START < 3900) {
     
-        let r2char = response2.substr(corIndex, 1);
-        if (r2char == "§") {
-            // If character at index is still corrupted, fetch new response2
-            if (join) {
-                if (args) {
-                    response2 = args.target.call(args.args).join("\n").replace(crp, "§");
-                } else {
-                    response2 = args.target.call().join("\n").replace(crp, "§");
-                }
-            } else {
-                if (args) {
-                    response2 = args.target.call(args.args).replace(crp, "§");
-                } else {
-                    response2 = args.target.call().replace(crp, "§");
-                }
-            }
-            continue;
-        }
-        
-        // Replace corrupted character with correct character from response2
-        response = replaceAt(response, corIndex, r2char);
+    let corIndex = response.indexOf("§");
+    if (corIndex == -1) {
+        return response;
     }
-    return response;
+
+    let r2char = response2.substr(corIndex, 1);
+    if (r2char == "§") {
+        // If character at index is still corrupted, fetch new response2
+        if (typeof response != "string") {
+            if (args) {
+                response2 = args.target.call(args.args).join("\n").replace(crp, "§");
+            } else {
+                response2 = args.target.call().join("\n").replace(crp, "§");
+            }
+        } else {
+            if (args) {
+                response2 = args.target.call(args.args).replace(crp, "§");
+            } else {
+                response2 = args.target.call().replace(crp, "§");
+            }
+        }
+        continue;
+    }
+    
+    // Replace corrupted character with correct character from response2
+    response = response.substr(0, corIndex) + r2char + response.substr(corIndex + r2char.length);
+}
+return response;
 
     // Function to replace a character at a specific index in a string
     function replaceAt(string, index, replacement) {
