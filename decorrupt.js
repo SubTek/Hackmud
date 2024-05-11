@@ -66,8 +66,4 @@ while (Date.now() - _START < 3900) {
 }
 return response;
 
-    // Function to replace a character at a specific index in a string
-    function replaceAt(string, index, replacement) {
-        return string.substr(0, index) + replacement + string.substr(index + replacement.length);
-    }
 }
